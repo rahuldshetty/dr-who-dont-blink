@@ -8,6 +8,7 @@ let currentFrame = 0;
 const MAX = 6;
 const path = "./res/vid/$.mp4"
 
+let lookaway_interval;
 const MAX_LOOKAWAY_FACTOR = 2;
 let currentLookAway = 0;
 
@@ -16,6 +17,8 @@ let min = 0;
 let sec = 0;
 var stoptime = true;
 let timer;
+
+
 
 // by default all options are set to true
 const detectionOptions = {
@@ -50,15 +53,15 @@ function restart(){
   // Begin from first
   currentFrame = -1;
   nextVideo();
-  startTimer();
   setResultText(true)
   document.getElementById('videoElement').setAttribute('loop', true);
   document.getElementById('startBtn').innerHTML = "Start";
+  start();
 }
 
 function start(){
   startTimer();
-  setInterval(setTime, 1000);
+  lookaway_interval = setInterval(setTime, 1000);
   document.getElementById('startBtn').setAttribute('disabled', true);
   document.getElementById('resetBtn').removeAttribute('disabled');
 }
@@ -71,6 +74,7 @@ function nextVideo(){
   if(currentFrame == MAX -1){
     // Remove loop element
     stopTimer();
+    clearInterval(lookaway_interval);
     setResultText(false);
     document.getElementById('videoElement').removeAttribute("loop");
   }
