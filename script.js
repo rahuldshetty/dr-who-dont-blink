@@ -2,6 +2,7 @@ let faceapi;
 let video;
 let detections;
 let canvas;
+let result_p;
 
 let currentFrame = 0;
 const MAX = 6;
@@ -22,15 +23,62 @@ const detectionOptions = {
   withDescriptors: false,
 };
 
+function setResultText(isReset=false){
+  if(isReset){
+    result_p.innerHTML = "";
+  }
+  else{
+    const year = randomInteger(1600, 2021);
+    const text = "You survived for " + timer.innerHTML + "s. They have sent you back to " + year;
+    result_p.innerHTML = text;
+  }
+}
+
+function randomInteger(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+
+function restart(){
+  // Stop all process
+  stopTimer();
+  resetTimer();
+  hr = 0;
+  min = 0;
+  sec = 0;
+
+  // Begin from first
+  currentFrame = -1;
+  nextVideo();
+  startTimer();
+  setResultText(true)
+  document.getElementById('videoElement').setAttribute('loop', true);
+  document.getElementById('startBtn').innerHTML = "Start";
+}
+
+function start(){
+  startTimer();
+  setInterval(setTime, 1000);
+  document.getElementById('startBtn').setAttribute('disabled', true);
+  document.getElementById('resetBtn').removeAttribute('disabled');
+}
+
 function nextVideo(){
   currentFrame = (currentFrame+1)%MAX;
   const newPath = path.replace("$", currentFrame);
 
   document.getElementById('videoElement').src = newPath;
+  if(currentFrame == MAX -1){
+    // Remove loop element
+    stopTimer();
+    setResultText(false);
+    document.getElementById('videoElement').removeAttribute("loop");
+  }
 }
 
 function setup() {
   canvas = createCanvas(200, 200);
+  canvas.parent('canvasPlacement');
 
   // load up your video
   video = createCapture(VIDEO);
@@ -39,14 +87,15 @@ function setup() {
   faceapi = ml5.faceApi(video, detectionOptions, modelReady);
   
   timer = document.getElementById('stopwatch');
+  result_p = document.getElementById('result');
+  document.getElementById('startBtn').removeAttribute('disabled');
+  document.getElementById('resetBtn').removeAttribute('resetBtn');
 }
 
 function modelReady() {
   console.log("ready!");
   console.log(faceapi);
   faceapi.detect(gotResults);
-  startTimer();
-  setInterval(setTime, 1000);
 }
 
 function setTime() {
